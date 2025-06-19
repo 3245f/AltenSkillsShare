@@ -123,11 +123,13 @@ def index():
     show_delete_button = False
     user_id = None  # Variabile per salvare l'ID dell'utente
     user_filename = None
+    nome_utente = "" # Inizializza per essere sicuro che sia sempre definito
     if request.method == "POST":
 
         #preleva i dati dal form
         user_id = get_next_id()
         nome = request.form.get("nome", "")
+        nome_utente = nome # Salva il nome per usarlo nel filename
         email = request.form.get("email", "")
         istruzione = request.form.get("istruzione", "")
         studi = request.form.get("studi", "")
