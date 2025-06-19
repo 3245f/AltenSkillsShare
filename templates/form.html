@@ -379,10 +379,46 @@
         container.appendChild(newExperience);
         }
 
+        // Segue una logica simile a `addExperience` ma con campi input diversi (`tool`, `azienda`, `certificati`)
+        function addExperiencePM(containerId, type) {
+            let container = document.getElementById(containerId);
 
+            if (!experienceCounters[type]) {
+                experienceCounters[type] = 2;
+            } else {
+                experienceCounters[type]++;
+            }
+
+            let experienceTitleElement = document.querySelector(`#${type}`);
+            let experienceTitle = experienceTitleElement ? experienceTitleElement.textContent : "Esperienza senza titolo";
+            let newExperience = document.createElement("div");
+            newExperience.classList.add("experience-block");
+            newExperience.innerHTML = `
+                <h4>Esperienza #${experienceCounters[type]} ${experienceTitle}</h4>
+                <label>Tool utilizzati:</label>
+                <input type="text" name="tool_${type}[]"><br><br>
+                <label>Azienda:</label>
+                <input type="text" name="azienda_${type}[]"><br><br>
+                <label>Durata attività (specificare mesi/anni):</label>
+                <input type="text" name="durata_${type}[]"><br><br>
+                <label>Descrizione dell'attività:</label>
+                <textarea name="descrizione_${type}[]"
+                                    oninput="autoExpand(this); autoExpandWidth(this)" 
+                                    style="width: 100px; min-width: 100px; height: 50px; overflow: hidden; white-space: nowrap;"></textarea><br><br>
+
+
+
+                <button type="button" onclick="removeExperienceNew(this)">Rimuovi</button>
+    `   ;
+        container.appendChild(newExperience);
+        }
+
+
+
+        
         // Funzione per aggiungere un nuovo blocco di esperienza specificamente per i progetti PM 
         // Segue una logica simile ma con campi input diversi (`tool`, `azienda`, `durata`, `descrizione`) (old)
-        function addExperiencePM(containerId, type) {
+        function addExperiencePMOLD(containerId, type) {
             let container = document.getElementById(containerId);
             let newExperience = document.createElement("div");
             newExperience.classList.add("experience-block");
@@ -1742,7 +1778,7 @@
                     </div>
                 </div>
                 <!-- Pulsante per aggiungere un'altra esperienza in project_manager_office -->
-                <button type="button" onclick="addExperiencesNew('project_manager_office-container', 'project_manager_office')">Aggiungi esperienza</button><br><br>
+                <button type="button" onclick="addExperiencePM('project_manager_office-container', 'project_manager_office')">Aggiungi esperienza</button><br><br>
             </div>
 
         <!-- PM project_manager -->            
@@ -1763,7 +1799,7 @@
                     </div>
                 </div>
                 <!-- Pulsante per aggiungere un'altra esperienza in project_manager -->
-                <button type="button" onclick="addExperiencesNew('project_manager-container', 'project_manager')">Aggiungi esperienza</button><br><br>
+                <button type="button" onclick="addExperiencePM('project_manager-container', 'project_manager')">Aggiungi esperienza</button><br><br>
             </div>
 
             <!-- PM risk_manager -->            
@@ -1784,7 +1820,7 @@
                     </div>
                 </div>
                 <!-- Pulsante per aggiungere un'altra esperienza in risk_manager -->
-                <button type="button" onclick="addExperiencesNew('risk_manager-container', 'risk_manager')">Aggiungi esperienza</button><br><br>
+                <button type="button" onclick="addExperiencePM('risk_manager-container', 'risk_manager')">Aggiungi esperienza</button><br><br>
             </div>
 
             <!-- PM resource_manager -->            
@@ -1805,7 +1841,7 @@
                     </div>
                 </div>
                 <!-- Pulsante per aggiungere un'altra esperienza in resource_manager -->
-                <button type="button" onclick="addExperiencesNew('resource_manager-container', 'resource_manager')">Aggiungi esperienza</button><br><br>
+                <button type="button" onclick="addExperiencePM('resource_manager-container', 'resource_manager')">Aggiungi esperienza</button><br><br>
             </div>
 
 
@@ -1827,7 +1863,7 @@
                     </div>
                 </div>
                 <!-- Pulsante per aggiungere un'altra esperienza in quality_manager -->
-                <button type="button" onclick="addExperiencesNew('quality_manager-container', 'quality_manager')">Aggiungi esperienza</button><br><br>
+                <button type="button" onclick="addExperiencePM('quality_manager-container', 'quality_manager')">Aggiungi esperienza</button><br><br>
             </div>
 
             <!-- PM communication_manager -->            
@@ -1848,7 +1884,7 @@
                     </div>
                 </div>
                 <!-- Pulsante per aggiungere un'altra esperienza in communication_manager -->
-                <button type="button" onclick="addExperiencesNew('communication_manager-container', 'communication_manager')">Aggiungi esperienza</button><br><br>
+                <button type="button" onclick="addExperiencePM('communication_manager-container', 'communication_manager')">Aggiungi esperienza</button><br><br>
             </div>
 
             <!-- PM portfolio_manager -->            
@@ -1869,7 +1905,7 @@
                     </div>
                 </div>
                 <!-- Pulsante per aggiungere un'altra esperienza in portfolio_manager -->
-                <button type="button" onclick="addExperiencesNew('portfolio_manager-container', 'portfolio_manager')">Aggiungi esperienza</button><br><br>
+                <button type="button" onclick="addExperiencePM('portfolio_manager-container', 'portfolio_manager')">Aggiungi esperienza</button><br><br>
             </div>
 
             <!-- PM program_manager -->            
@@ -1890,7 +1926,7 @@
                     </div>
                 </div>
                 <!-- Pulsante per aggiungere un'altra esperienza in program_manager -->
-                <button type="button" onclick="addExperiencesNew('program_manager-container', 'program_manager')">Aggiungi esperienza</button><br><br>
+                <button type="button" onclick="addExperiencePM('program_manager-container', 'program_manager')">Aggiungi esperienza</button><br><br>
             </div>
 
             <!-- PM team_leader -->            
@@ -1911,7 +1947,7 @@
                     </div>
                 </div>
                 <!-- Pulsante per aggiungere un'altra esperienza in team_leader -->
-                <button type="button" onclick="addExperiencesNew('team_leader-container', 'team_leader')">Aggiungi esperienza</button><br><br>
+                <button type="button" onclick="addExperiencePM('team_leader-container', 'team_leader')">Aggiungi esperienza</button><br><br>
             </div>
 
             <!-- PM business_analyst -->            
@@ -1932,7 +1968,7 @@
                     </div>
                 </div>
                 <!-- Pulsante per aggiungere un'altra esperienza in business_analyst -->
-                <button type="button" onclick="addExperiencesNew('business_analyst-container', 'business_analyst')">Aggiungi esperienza</button><br><br>
+                <button type="button" onclick="addExperiencePM('business_analyst-container', 'business_analyst')">Aggiungi esperienza</button><br><br>
             </div>
 
             <!-- PM contract_back_office -->            
@@ -1953,7 +1989,7 @@
                     </div>
                 </div>
                 <!-- Pulsante per aggiungere un'altra esperienza in contract_back_office -->
-                <button type="button" onclick="addExperiencesNew('contract_back_office-container', 'contract_back_office')">Aggiungi esperienza</button><br><br>
+                <button type="button" onclick="addExperiencePM('contract_back_office-container', 'contract_back_office')">Aggiungi esperienza</button><br><br>
             </div>
         </div>
                    
