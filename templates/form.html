@@ -533,7 +533,7 @@
         // Funzione per aprire il client email con destinatario e oggetto predefiniti (Fase Iniziale) new
         function sendInitialEmail(recipient, subject, userFileName) {
             // Corpo dell'email che chiede all'utente di allegare il file scaricato
-            const body = `Gentile responsabile, \n\nIn allegato trovi il mio file con le risposte del Modulo Competenze Alten (${userFileName}). \n\nGrazie per la collaborazione.\n\nCordiali saluti,\n[Il tuo nome]`;
+            const body = `Gentile responsabile, \n\nIn allegato trovi il mio file con le risposte del Modulo Competenze Alten (${userFileName}). \n\nGrazie per la collaborazione.\n\nCordiali saluti,\n`;
             
             // Costruisci il link mailto completo
             const mailtoLink = `mailto:${recipient}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
@@ -548,7 +548,7 @@
             const recipient = "responsabile.dati@alten.it"; // Indirizzo email del responsabile per notifica SharePoint
             const subject = "Consegna Risposte Modulo Competenze Aziendali - " + userFileName; // Oggetto più specifico
             
-            const body = `Gentile responsabile, \n\nHo compilato il modulo competenze aziendali. \n\nHo scaricato il mio file di risposte "${userFileName}" e l'ho caricato (o lo caricherò) direttamente nella cartella SharePoint designata. \n\nLa cartella SharePoint per il caricamento è accessibile al seguente link: \n\n${sharepointLink}\n\nGrazie per la collaborazione.\n\nCordiali saluti,\n[Il tuo nome]`;
+            const body = `Gentile responsabile, \n\nHo compilato il modulo competenze aziendali. \n\nHo scaricato il mio file di risposte "${userFileName}" e l'ho caricato (o lo caricherò) direttamente nella cartella SharePoint designata. \n\nLa cartella SharePoint per il caricamento è accessibile al seguente link: \n\n${sharepointLink}\n\nGrazie per la collaborazione.\n\nCordiali saluti,\n`;
             
             // Codifica l'intero corpo dell'email per l'URL mailto
             const encodedBody = encodeURIComponent(body);
