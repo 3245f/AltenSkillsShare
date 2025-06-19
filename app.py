@@ -23,7 +23,7 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 USER_FILES_DIR = "skills_user"
 
 
-EMAIL_ONLY_MODE = os.environ.get("EMAIL_ONLY_MODE", "True").lower() == "false"
+EMAIL_ONLY_MODE = os.environ.get("EMAIL_ONLY_MODE", "False").lower() == "false"
 # Crea un oggetto Lock per gestire l'accesso concorrente al file Excel principale
 # excel_lock = threading.Lock() # Non più necessario se non si usa excel_lock per il file principale
 
