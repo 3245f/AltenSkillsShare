@@ -91,7 +91,7 @@ def aggiungi_sezione(nome_sezione, scelte, dettagli_dict, data):
 EMAIL_ONLY_MODE = os.environ.get("EMAIL_ONLY_MODE", "True").lower() == "true"
 
 # Dettagli per la modalità solo email
-INITIAL_RECIPIENT_EMAIL = os.environ.get("INITIAL_RECIPIENT_EMAIL", "destinatario.iniziale@alten.it")
+INITIAL_RECIPIENT_EMAIL = os.environ.get("INITIAL_RECIPIENT_EMAIL", "stefania.giordano@alten.it")
 INITIAL_EMAIL_SUBJECT = os.environ.get("INITIAL_EMAIL_SUBJECT", "Modulo Competenze Alten - Le mie risposte")
 
 # --- CONFIGURAZIONE SHAREPOINT (per fase successiva e upload automatico opzionale) ---
