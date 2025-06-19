@@ -1,6 +1,3 @@
-# Back-end: elabora i dati, interagisce con lo storage e risponde alle richieste del browser
-# Flask = micro-framework web per Python che fornisce gli strumenti e le funzionalità di base per costruire applicazioni web
-
 from flask import Flask, request, render_template, send_file, abort, redirect, url_for
 import pandas as pd
 import os
@@ -10,79 +7,15 @@ import logging   # Importa il modulo logging
 import requests  # Importa la libreria requests per le chiamate HTTP (necessaria per upload esterni)
 import urllib.parse # Per codificare gli URL (utile per mailto)
 
-# Inizializzazione dell'applicazione Flask
 app = Flask(__name__)
+
+
 
 # Configura il logging: imposta il livello minimo dei messaggi da visualizzare (INFO e superiori)
 # e il formato del messaggio (timestamp, livello, messaggio).
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+EXCEL_FILE = "skills_trial.xlsx"
 
-# File Excel principale dove verranno salvate tutte le risposte
-# EXCEL_FILE = "alten_skills_trial.xlsx" # Non più usato per salvataggio principale
-# Nome della directory dove verranno salvati i file Excel individuali per ogni utente
-USER_FILES_DIR = "skills_user"
-
-
-EMAIL_ONLY_MODE = os.environ.get("EMAIL_ONLY_MODE", "False").lower() == "false"
-# Crea un oggetto Lock per gestire l'accesso concorrente al file Excel principale
-# excel_lock = threading.Lock() # Non più necessario se non si usa excel_lock per il file principale
-
-# Crea la directory USER_FILES_DIR se non esiste già dove exist_ok=True evita un errore se la directory esiste già
-os.makedirs(USER_FILES_DIR, exist_ok=True)
-
-# Funzione per inizializzare o verificare il file Excel principale (VERSIONE ROBUSTA)
-# Questa funzione non è più necessaria se non si usa il file Excel principale
-# def initialize_main_excel_file():
-#     global EXCEL_FILE
-#     logging.info(f"Tentativo di inizializzazione del file Excel principale: {EXCEL_FILE}")
-    
-#     required_columns = [
-#         "ID", "Nome", "Email", "Istruzione", "Indirizzo di studio", "Sede Alten",
-#         "Esperienza (anni)", "Esperienza Alten (anni)", "Certificazioni",
-#         "Clienti Railway", "Area Railway", "Normative", "Metodologie lavoro",
-#         "Sistemi Operativi", "Info aggiuntive", "Hobby"
-#     ]
-
-#     try:
-#         df = pd.read_excel(EXCEL_FILE)
-#         logging.info(f"File Excel '{EXCEL_FILE}' caricato con {len(df)} righe.")
-        
-#         if df.empty or not all(col in df.columns for col in required_columns):
-#             logging.warning(f"Il file Excel '{EXCEL_FILE}' è vuoto o mancano colonne essenziali. Lo si reinizializza con le intestazioni predefinite.")
-#             df = pd.DataFrame(columns=required_columns)
-#             df.to_excel(EXCEL_FILE, index=False)
-#             logging.info(f"File Excel '{EXCEL_FILE}' reinizializzato con intestazioni.")
-        
-#     except FileNotFoundError:
-#         logging.info(f"File Excel '{EXCEL_FILE}' non trovato. Creazione di un nuovo file con intestazioni.")
-#         df = pd.DataFrame(columns=required_columns)
-#         df.to_excel(EXCEL_FILE, index=False)
-#         logging.info(f"File Excel '{EXCEL_FILE}' creato con successo.")
-#     except Exception as e:
-#         logging.error(f"Errore critico durante il caricamento o la creazione del file Excel '{EXCEL_FILE}': {e}. Il file verrà creato vuoto per proseguire.")
-#         df = pd.DataFrame(columns=required_columns)
-#         df.to_excel(EXCEL_FILE, index=False)
-#         logging.warning(f"Recupero: creato un file Excel vuoto per '{EXCEL_FILE}' a causa di un errore precedente.")
-
-# Chiamiamo la funzione di inizializzazione all'avvio dell'applicazione.
-# initialize_main_excel_file() # Non più necessario
-
-# Funzione per assegnare un nuovo ID a ciascun nuovo utente che compila il Form
-# L'ID sarà solo sequenziale per i nomi dei file temporanei, non persistente nel file principale
-_current_id = 0
-def get_next_id():
-    global _current_id
-    _current_id += 1
-    return _current_id
-
-# Funzione per aggiungere le informazioni delle sezioni di progetto in ordine logico
-def aggiungi_sezione(nome_sezione, scelte, dettagli_dict, data):
-    data[f"Aree progetti {nome_sezione}"] = ", ".join(scelte)
-    for area in dettagli_dict:
-        if area in dettagli_dict:
-            data[area] = "\n\n".join(dettagli_dict[area]) if dettagli_dict[area] else ""
-        else:
-            data[area] = ""
 
 # --- CONFIGURAZIONE MODALITÀ FASE E-MAIL/SHAREPOINT ---
 # Imposta su 'True' per la modalità solo email (fase iniziale).
@@ -91,8 +24,8 @@ def aggiungi_sezione(nome_sezione, scelte, dettagli_dict, data):
 EMAIL_ONLY_MODE = os.environ.get("EMAIL_ONLY_MODE", "True").lower() == "true"
 
 # Dettagli per la modalità solo email
-INITIAL_RECIPIENT_EMAIL = os.environ.get("INITIAL_RECIPIENT_EMAIL", "stefania.giordano@alten.it")
-INITIAL_EMAIL_SUBJECT = os.environ.get("INITIAL_EMAIL_SUBJECT", "Modulo Competenze Alten - Le mie risposte")
+INITIAL_RECIPIENT_EMAIL = os.environ.get("INITIAL_RECIPIENT_EMAIL", "stefania.giordano@alten.it") # da sostituire
+INITIAL_EMAIL_SUBJECT = os.environ.get("INITIAL_EMAIL_SUBJECT", "Modulo Competenze Alten")
 
 # --- CONFIGURAZIONE SHAREPOINT (per fase successiva e upload automatico opzionale) ---
 # Credenziali e URL del tuo "altro SharePoint" (DA SOSTITUIRE CON VARIABILI D'AMBIENTE SU RENDER!)
@@ -133,22 +66,68 @@ def upload_file_to_generic_sharepoint(file_path, file_name):
         logging.error(f"Errore durante l'upload del file a SharePoint generico: {e}. Risposta: {getattr(e.response, 'text', 'Nessuna risposta testuale')}")
         return False
 
+# Crea la directory USER_FILES_DIR se non esiste già dove exist_ok=True evita un errore se la directory esiste già
 
-# Definisce la rotta principale dell'applicazione ("/")
+USER_FILES_DIR = "skills_user"
+os.makedirs(USER_FILES_DIR, exist_ok=True)
+
+
+
+user_df = pd.DataFrame(columns=[
+         "Nome", "Email"])
+
+if not os.path.exists(EXCEL_FILE):
+
+
+    df = pd.DataFrame(columns=[
+        "ID", "Nome", "Email"])
+
+    df.to_excel(EXCEL_FILE, index=False)
+
+
+# Funzione per assegnare un nuovo ID a ciascun nuovo utente che compila il Form
+# L'ID sarà solo sequenziale per i nomi dei file temporanei, non persistente nel file principale
+_current_id = 0
+def get_next_id():
+    global _current_id
+    _current_id += 1
+    return _current_id
+
+
+
+def remove_user_from_main_file(user_id):
+    # Rimuovi la riga dal file principale basata sull'ID dell'utente
+    if os.path.exists(EXCEL_FILE):
+        df = pd.read_excel(EXCEL_FILE)
+        # Trova e rimuovi la riga corrispondente all'ID dell'utente
+        df = df[df["ID"] != user_id]
+        df.to_excel(EXCEL_FILE, index=False)
+
+
+
+
+# Funzione per aggiungere le informazioni in ordine logico
+def aggiungi_sezione(nome_sezione, scelte, dettagli_dict,data):
+    """Aggiunge la colonna con le scelte e i dettagli di una specifica area al dizionario dei dati"""
+    data[f"Aree progetti {nome_sezione}"] = ", ".join(scelte)
+    
+    # Aggiunge la colonna con i dettagli subito dopo la relativa sezione
+    for area in dettagli_dict:
+        data[area] = "\n\n".join(dettagli_dict[area]) if dettagli_dict[area] else ""
+       
+
 @app.route("/", methods=["GET", "POST"])
 def index():
+
     success_message = None
     show_delete_button = False
-    user_id = None 
+    user_id = None  # Variabile per salvare l'ID dell'utente
     user_filename = None
-    nome_utente = "" # Inizializza per essere sicuro che sia sempre definito
-
     if request.method == "POST":
-        user_id = get_next_id() 
 
-        # Preleva i dati dal form
+        #preleva i dati dal form
+        user_id = get_next_id()
         nome = request.form.get("nome", "")
-        nome_utente = nome # Salva il nome per usarlo nel filename
         email = request.form.get("email", "")
         istruzione = request.form.get("istruzione", "")
         studi = request.form.get("studi", "")
@@ -156,151 +135,194 @@ def index():
         sede = request.form.get("sede", "")
         esperienza = request.form.get("esperienza", "")
         esperienza_alten = request.form.get("esperienza_alten", "")
-        clienti_railway = request.form.getlist("clienti")
-        clienti_str = ", ".join(clienti_railway) if clienti_railway else ""
-        area_railway = request.form.getlist("area_railway")
-        area_str = ", ".join(area_railway) if area_railway else ""
+        clienti_railway= request.form.getlist("clienti")  
+        clienti_str = ", ".join(clienti_railway) if clienti_railway else "" 
+        area_railway= request.form.getlist("area_railway")  
+        area_str = ", ".join(area_railway) if area_railway else "" 
         normative = request.form.get("normative", "")
-        metodologia = request.form.getlist("metodologia")
-        metodologia_str = ", ".join(metodologia) if metodologia else ""
+        metodologia= request.form.getlist("metodologia")  
+        metodologia_str = ", ".join(metodologia) if metodologia else "" 
         sistemi_operativi = request.form.get("SistemiOperativi", "")
-        altro = request.form.get("altro", "") 
-        hobby = request.form.get("hobby", "")
+        altro= request.form.getlist("altro")  
+        altro_str = ", ".join(altro) if altro else "" 
+        hobby= request.form.getlist("hobby")  
+        hobby_str = ", ".join(hobby) if hobby else "" 
 
 
-        # Elaborazione delle sezioni dinamiche dei "Progetti" 
-        scelte_progetti_sviluppo = request.form.getlist('sviluppo')
-        dettagli_sviluppo = {area: [] for area in ["Applicativi", "Firmware", "Web", "Mobile", "Scada", "Plc"]}
+# Progetti SVILUPPO
+        progetti_sviluppo_si_no = request.form.get('progetti_sw_hw_auto', 'No')  
+        scelte_progetti_sviluppo = request.form.getlist('sviluppo')  
+        dettagli_sviluppo = {area: "" for area in ["Applicativi", "Firmware", "Web", "Mobile", "Scada", "Plc"]}
         for area in dettagli_sviluppo.keys():
-            if area not in scelte_progetti_sviluppo: continue
+            if area not in scelte_progetti_sviluppo:  
+                continue  
+
             linguaggi = request.form.getlist(f'linguaggi_{area.lower()}[]')
             tool = request.form.getlist(f'tool_{area.lower()}[]')
             ambito = request.form.getlist(f'Ambito_{area.lower()}[]')
             durata = request.form.getlist(f'durata_{area.lower()}[]')
             descrizione = request.form.getlist(f'descrizione_{area.lower()}[]')
+            #print(f"{area} -> Linguaggi: {linguaggi}, Tool: {tool}, Ambito: {ambito}, Durata: {durata}, Descrizione: {descrizione}")
             esperienze = []
-            max_len = max(len(linguaggi), len(tool), len(ambito), len(durata), len(descrizione))
-            for i in range(max_len):
+            for i in range(max(len(linguaggi), len(tool), len(ambito), len(durata), len(descrizione))):
                 l = linguaggi[i] if i < len(linguaggi) else ""
                 t = tool[i] if i < len(tool) else ""
                 a = ambito[i] if i < len(ambito) else ""
                 e = durata[i] if i < len(durata) else ""
                 d = descrizione[i] if i < len(descrizione) else ""
                 esperienze.append(f"{l} | {t} | {a} | {e} | {d}")
-            dettagli_sviluppo[area] = esperienze
+            dettagli_sviluppo[area] =esperienze
 
-        scelte_progetti_vv = request.form.getlist('v&v')
-        dettagli_vv = {area: [] for area in ["functional_testing", "test_and_commisioning", "unit", "analisi_statica", "analisi_dinamica", "automatic_test", "piani_schematici", "procedure", "cablaggi", "FAT", "SAT", "doc"]}
+      
+# Progetti V&V
+        scelte_progetti_vv = request.form.getlist('v&v')  
+        dettagli_vv = {area: "" for area in ["functional_testing", "test_and_commisioning", "unit", "analisi_statica", "analisi_dinamica", "automatic_test", "piani_schematici", "procedure", "cablaggi", "FAT", "SAT", "doc"]}
         for area in dettagli_vv.keys():
-            if area not in scelte_progetti_vv: continue
+            if area not in scelte_progetti_vv:  
+                continue  
+
             tecnologie = request.form.getlist(f'tecnologie_{area}[]')
             ambito = request.form.getlist(f'azienda_{area}[]')
             durata = request.form.getlist(f'durata_{area}[]')
             descrizione = request.form.getlist(f'descrizione_{area}[]')
+            #print(f"{area} -> Tecnologie: {tecnologie}, Ambito: {ambito}, Durata: {durata}, Descrizione: {descrizione}")
             esperienze = []
-            max_len = max(len(tecnologie), len(ambito), len(durata), len(descrizione))
-            for i in range(max_len):
+            for i in range(max(len(tecnologie), len(ambito), len(descrizione))):
                 t = tecnologie[i] if i < len(tecnologie) else ""
                 a = ambito[i] if i < len(ambito) else ""
                 e = durata[i] if i < len(durata) else ""
                 d = descrizione[i] if i < len(descrizione) else ""
-                esperienze.append(f"{t} | {a} | {e} | {d}")
-            dettagli_vv[area] = esperienze
-        
-        scelte_progetti_system = request.form.getlist('system')
-        dettagli_system = {area: [] for area in ["requirement_management", "requirement_engineering", "system_engineering", "project_engineering"]}
+                esperienze.append(f" {t} | {a} | {e} | {d}")
+            dettagli_vv[area] =esperienze
+       
+# Progetti System
+        scelte_progetti_system = request.form.getlist('system')  
+        dettagli_system = {area: "" for area in ["requirement_management", "requirement_engineering", "system_engineering", "project_engineering"]}
         for area in dettagli_system.keys():
-            if area not in scelte_progetti_system: continue
+            if area not in scelte_progetti_system:  
+                continue  
             tecnologie = request.form.getlist(f'tecnologie_{area}[]')
             ambito = request.form.getlist(f'azienda_{area}[]')
             durata = request.form.getlist(f'durata_{area}[]')
             descrizione = request.form.getlist(f'descrizione_{area}[]')
+            #print(f"{area} -> Tecnologie: {tecnologie}, Ambito: {ambito}, Durata: {durata}, Descrizione: {descrizione}")
             esperienze = []
-            max_len = max(len(tecnologie), len(ambito), len(durata), len(descrizione))
-            for i in range(max_len):
+            for i in range(max(len(tecnologie), len(ambito), len(descrizione))):
                 t = tecnologie[i] if i < len(tecnologie) else ""
                 a = ambito[i] if i < len(ambito) else ""
                 e = durata[i] if i < len(durata) else ""
                 d = descrizione[i] if i < len(descrizione) else ""
                 esperienze.append(f"{t} | {a} | {e} | {d}")
-            dettagli_system[area] = esperienze
+            dettagli_system[area] =esperienze
+        #print(dettagli_system)
+       
 
-        scelte_progetti_safety = request.form.getlist('safety')
-        dettagli_safety = {area: [] for area in ["RAMS", "hazard_analysis", "verification_report", "fire_safety", "reg_402"]}
+# Progetti Safety
+        scelte_progetti_safety = request.form.getlist('safety')  
+        dettagli_safety = {area: "" for area in ["RAMS", "hazard_analysis", "verification_report", "fire_safety", "reg_402"]}
+        #print(request.form) 
         for area in dettagli_safety.keys():
-            if area not in scelte_progetti_safety: continue
+            if area not in scelte_progetti_safety: 
+                continue  
+
             tecnologie = request.form.getlist(f'tecnologie_{area}[]')
             ambito = request.form.getlist(f'azienda_{area}[]')
             durata = request.form.getlist(f'durata_{area}[]')
             descrizione = request.form.getlist(f'descrizione_{area}[]')
+            #print(f"{area} -> Tecnologie: {tecnologie}, Ambito: {ambito}, Durata: {durata}, Descrizione: {descrizione}")
             esperienze = []
-            max_len = max(len(tecnologie), len(ambito), len(durata), len(descrizione))
-            for i in range(max_len):
+            for i in range(max(len(tecnologie), len(ambito), len(descrizione))):
                 t = tecnologie[i] if i < len(tecnologie) else ""
                 a = ambito[i] if i < len(ambito) else ""
                 e = durata[i] if i < len(durata) else ""
                 d = descrizione[i] if i < len(descrizione) else ""
                 esperienze.append(f"{t} | {a} | {e} | {d}")
-            dettagli_safety[area] = esperienze
+            dettagli_safety[area] =esperienze
+        #print(dettagli_safety)
+      
 
-        scelte_progetti_segnalamento = request.form.getlist('segnalamento')
-        dettagli_seg = {area: [] for area in ["piani_schematici_segnalamento", "cfg_impianti", "layout_apparecchiature", "architettura_rete", "computo_metrico"]}
+# Progetti Segnalamento      
+        scelte_progetti_segnalamento = request.form.getlist('segnalamento')  
+        dettagli_seg = {area: "" for area in ["piani_schematici_segnalamento", "cfg_impianti", "layout_apparecchiature", "architettura_rete", "computo_metrico"]}
         for area in dettagli_seg.keys():
-            if area not in scelte_progetti_segnalamento: continue
+            if area not in scelte_progetti_segnalamento:  
+                continue  
+
             tecnologie = request.form.getlist(f'tecnologie_{area}[]')
             ambito = request.form.getlist(f'azienda_{area}[]')
             durata = request.form.getlist(f'durata_{area}[]')
             descrizione = request.form.getlist(f'descrizione_{area}[]')
+            #print(f"{area} -> Tecnologie: {tecnologie}, Ambito: {ambito}, Durata: {durata}, Descrizione: {descrizione}")
             esperienze = []
-            max_len = max(len(tecnologie), len(ambito), len(durata), len(descrizione))
-            for i in range(max_len):
+            for i in range(max(len(tecnologie),len(ambito), len(descrizione))):
                 t = tecnologie[i] if i < len(tecnologie) else ""
                 a = ambito[i] if i < len(ambito) else ""
                 e = durata[i] if i < len(durata) else ""
                 d = descrizione[i] if i < len(descrizione) else ""
                 esperienze.append(f"{t} | {a} | {e} | {d}")
             dettagli_seg[area] = esperienze
+        #print(dettagli_seg)
+       
 
-        scelte_progetti_bim = request.form.getlist('bim')
-        dettagli_bim = {area: [] for area in ["modellazione_e_digitalizzazione", "verifica_analisi_e_controllo_qualita", "gestione_coordinamento_e_simulazione", "visualizzazione_realtavirtuale_e_rendering"]}
+
+
+# Progetti BIM
+        progetti_bim_si_no = request.form.get('progetti_bim', 'No')  
+        scelte_progetti_bim = request.form.getlist('bim')  
+        #print(scelte_progetti_bim) 
+        dettagli_bim = {area: "" for area in ["modellazione_e_digitalizzazione", "verifica_analisi_e_controllo_qualita", "gestione_coordinamento_e_simulazione", "visualizzazione_realtavirtuale_e_rendering"]}
+        #print(request.form) 
         for area in dettagli_bim.keys():
-            if area not in scelte_progetti_bim: continue
+            if area not in scelte_progetti_bim:  
+                continue  
             tool = request.form.getlist(f'tool_{area}[]')
             azienda = request.form.getlist(f'azienda_{area}[]')
             durata = request.form.getlist(f'durata_{area}[]')
             descrizione = request.form.getlist(f'descrizione_{area}[]')
             certificazione = request.form.getlist(f'certificazioni_{area}[]')
+            #print(f"{area} -> Tool: {tool}, Azienda: {azienda}, Durata: {durata}, Descrizione: {descrizione}, Certificazioni: {certificazione}")
             esperienze = []
-            max_len = max(len(certificazione), len(tool), len(azienda), len(descrizione), len(durata))
-            for i in range(max_len):
+            for i in range(max(len(certificazione), len(tool), len(azienda), len(descrizione))):
                 t = tool[i] if i < len(tool) else ""
                 a = azienda[i] if i < len(azienda) else ""
                 e = durata[i] if i < len(durata) else ""
                 d = descrizione[i] if i < len(descrizione) else ""
                 c = certificazione[i] if i < len(certificazione) else ""
-                esperienze.append(f"{t} | {a} | {e} | {d} | {c}")
-            dettagli_bim[area] = esperienze
+                esperienze.append(f" {t} | {a} | {e} | {d} | {c}")
+            dettagli_bim[area] =esperienze
+        #print("dettagli bim",dettagli_bim)
+    
 
-        scelte_progetti_pm = request.form.getlist('pm')
-        dettagli_pm = {area: [] for area in ["project_manager_office", "project_manager", "risk_manager", "resource_manager", "quality_manager", "communication_manager", "portfolio_manager", "program_manager","team_leader", "business_analyst", "contract_back_office"]}
+
+# Progetti PM
+        progetti_pm_si_no = request.form.get('progetti_pm', 'No')  
+        scelte_progetti_pm = request.form.getlist('pm')  
+        dettagli_pm = {area: "" for area in ["project_manager_office", "project_manager", "risk_manager", "resource_manager", "quality_manager", "communication_manager", "portfolio_manager", "program_manager","team_leader", "business_analyst", "contract_back_office"]}
+        #print(request.form) 
         for area in dettagli_pm.keys():
-            if area not in scelte_progetti_pm: continue
+            if area not in scelte_progetti_pm:  
+                continue  
+
             tool = request.form.getlist(f'tool_{area}[]')
             azienda = request.form.getlist(f'azienda_{area}[]')
             durata = request.form.getlist(f'durata_{area}[]')
             descrizione = request.form.getlist(f'descrizione_{area}[]')
+            #print(f"{area} -> Tool: {tool}, Azienda: {azienda}, Durata: {durata}, Descrizione: {descrizione}")
             esperienze = []
-            max_len = max(len(tool), len(azienda), len(durata), len(descrizione))
-            for i in range(max_len):
+            for i in range(max(len(tool), len(azienda), len(descrizione))):
                 t = tool[i] if i < len(tool) else ""
-                a = azienda[i] if i < len(ambito) else ""
+                a = azienda[i] if i < len(azienda) else ""
                 e = durata[i] if i < len(durata) else ""
                 d = descrizione[i] if i < len(descrizione) else ""
                 esperienze.append(f"{t} | {a} | {e} | {d}")
-            dettagli_pm[area] = esperienze
+            dettagli_pm[area] =esperienze
+        #print("dettagli pm",dettagli_pm)
+       
 
-        # Crea un dizionario 'data' con tutte le informazioni raccolte dal form
+
+# Dati da salvare nel file excel
         data = {
+
             "ID": user_id,
             "Nome": nome,
             "Email": email,
@@ -310,25 +332,40 @@ def index():
             "Esperienza (anni)": esperienza,
             "Esperienza Alten (anni)": esperienza_alten,
             "Certificazioni": certificati,
-            "Clienti Railway": clienti_str,
-            "Area Railway": area_str,
-            "Normative": normative,
+            "Clienti Railway":  clienti_str, 
+            "Area Railway": area_str, 
+            "Normative": normative, 
             "Metodologie lavoro": metodologia_str,
             "Sistemi Operativi": sistemi_operativi,
-            "Info aggiuntive": altro,
-            "Hobby": hobby,
+            "Info aggiuntive": altro_str,
+            "Hobby": hobby_str,
+           # "Progetti Sviluppo": progetti_sviluppo_si_no,
+           # "Aree progetti Sviluppo": ", ".join(scelte_progetti_sviluppo),
+           # "Aree progetti V&V": ", ".join(scelte_progetti_vv),
+           # "Aree progetti Safety": ", ".join(scelte_progetti_safety),
+           # "Aree progetti System": ", ".join(scelte_progetti_system),
+           # "Aree progetti Segnalamento": ", ".join(scelte_progetti_segnalamento),
+           # "Progetti BIM": progetti_bim_si_no,
+           # "Progetti PM": progetti_pm_si_no,
+
         }
 
-        # Aggiunta delle varie sezioni di progetto con i dettagli in ordine al dizionario
-        aggiungi_sezione("Sviluppo", scelte_progetti_sviluppo, dettagli_sviluppo, data)
-        aggiungi_sezione("V&V", scelte_progetti_vv, dettagli_vv, data)
-        aggiungi_sezione("Safety", scelte_progetti_safety, dettagli_safety, data)
-        aggiungi_sezione("System", scelte_progetti_system, dettagli_system, data)
-        aggiungi_sezione("Segnalamento", scelte_progetti_segnalamento, dettagli_seg, data)
-        aggiungi_sezione("BIM", scelte_progetti_bim, dettagli_bim, data)
-        aggiungi_sezione("Project Management", scelte_progetti_pm, dettagli_pm, data)
 
-        # Controlla se l'azione del form è "submit_main" (pulsante "Invia")
+
+
+        # Aggiunta delle varie sezioni con i dettagli in ordine
+        aggiungi_sezione("Sviluppo", scelte_progetti_sviluppo, dettagli_sviluppo,data)
+        aggiungi_sezione("V&V", scelte_progetti_vv, dettagli_vv,data)
+        aggiungi_sezione("Safety", scelte_progetti_safety, dettagli_safety,data)
+        aggiungi_sezione("System", scelte_progetti_system, dettagli_system,data)
+        aggiungi_sezione("Segnalamento", scelte_progetti_segnalamento, dettagli_seg,data)
+
+        aggiungi_sezione("BIM", scelte_progetti_bim, dettagli_bim,data)
+        aggiungi_sezione("Project Management", scelte_progetti_pm, dettagli_pm,data)   
+
+
+
+    # Controlla se l'azione del form è "submit_main" (pulsante "Invia")
         if request.form['action'] == 'submit_main':
             try:
                 # La parte che scriveva sul file Excel principale è stata commentata
@@ -385,47 +422,35 @@ def index():
                 success_message = "Nome file per l'esportazione su SharePoint generico non specificato."
                 logging.warning("Nessun nome file fornito per l'esportazione su SharePoint generico.")
             
-            user_filename = filename_to_export 
+            user_filename = filename_to_export     
 
-
-    # Passa tutte le variabili necessarie al template
-    return render_template(
-        "form.html", 
+    return render_template("form.html", 
         success_message=success_message, 
         show_delete_button=show_delete_button, 
         user_filename=user_filename,
         sharepoint_folder_browser_url=SHAREPOINT_FOLDER_BROWSER_URL,
         email_only_mode=EMAIL_ONLY_MODE, 
         initial_recipient_email=INITIAL_RECIPIENT_EMAIL, 
-        initial_email_subject=INITIAL_EMAIL_SUBJECT
-    )
+        initial_email_subject=INITIAL_EMAIL_SUBJECT) 
 
 @app.route("/download")
 def download():
-    file_type = request.args.get("file", "main")
+    file_type = request.args.get("file", "main")  # Valore di default: 'main'
 
     if file_type == "personal":
-        filename = request.args.get("filename")
+        filename = request.args.get("filename")  # Il nome del file personale
         if not filename:
-            abort(400, description="Missing filename parameter")
+            return abort(400, description="Missing filename parameter")
         
         user_filepath = os.path.join(USER_FILES_DIR, filename)
         if not os.path.exists(user_filepath):
-            abort(404, description="File not found")
+            return abort(404, description="File not found")
 
         return send_file(user_filepath, as_attachment=True, download_name=filename)
-    
-    # La parte per scaricare il file principale non è più rilevante se non viene salvato
-    # elif file_type == "main": 
-    #     try:
-    #         with excel_lock:
-    #             if not os.path.exists(EXCEL_FILE):
-    #                 abort(404, description="File not found")
-    #             return send_file(EXCEL_FILE, as_attachment=True, download_name="skills_trial.xlsx")
-    #     except Exception as e:
-    #         logging.error(f'Si è verificato un errore durante il download del file principale: {e}', exc_info=True)
-    #         return redirect(url_for('index'))
+
     return abort(404, description="Invalid file type or file not found.") # Gestisce il caso di download di tipo "main" non più supportato
+    
+
 
 if __name__ == "__main__":
     app.run(debug=True)
