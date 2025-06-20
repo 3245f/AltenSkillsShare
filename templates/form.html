@@ -569,7 +569,7 @@
         // Funzione per aprire il client email (outlook in questo caso) con destinatario e oggetto predefiniti 
         function sendInitialEmail(destinatario, oggetto, userFileName) {
             // Corpo dell'email che chiede all'utente di allegare il file scaricato
-            const body = `Ciao, \n\nIn allegato trovi il mio file con le risposte del Modulo Competenze Alten (${userFileName}). \n\nGrazie per la collaborazione.\n\nCordiali saluti,\n`;
+            const body = `Ciao, \n\nIn allegato trovi il mio file con le risposte del Modulo Competenze Alten (${userFileName}). \n\n`;
             
             // Costruisci il link mailto completo: indica al browser di aprire il client di posta elettronica predefinito dell'utente
             //  La funzione encodeURIComponent() codifica caratteri speciali (come spazi, simboli, caratteri accentati) in un formato URL-compatibile
