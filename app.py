@@ -26,7 +26,7 @@ EMAIL_ONLY_MODE = os.environ.get("EMAIL_ONLY_MODE", "True").lower() == "true"
 DESTINATARIO_EMAIL = os.environ.get("DESTINATARIO_EMAIL", "stefania.giordano@alten.it") # da sostituire
 #print(f"VERIFICA: DESTINATARIO_EMAIL utilizzato: '{DESTINATARIO_EMAIL}'") 
 OGGETTO_EMAIL = os.environ.get("OGGETTO_EMAIL", "Modulo Competenze Alten")
-#DESTINATARIO_EMAIL = "stefania.giordano@alten.it"
+#RICEVENTE_EMAIL = "stefania.giordano@alten.it"
 #OGGETTO_EMAIL = "Modulo Competenze Alten"
 
 # Configurazione SharePoint (todo)
@@ -426,7 +426,7 @@ def index():
         user_filename=user_filename,
         sharepoint_folder_browser_url=SHAREPOINT_FOLDER_BROWSER_URL,
         email_only_mode=EMAIL_ONLY_MODE, 
-        destiNatario_email=DESTINATARIO_EMAIL, 
+        destinatario_email=DESTINATARIO_EMAIL, 
         oggetto_email=OGGETTO_EMAIL) 
 
 
