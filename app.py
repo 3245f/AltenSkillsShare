@@ -23,11 +23,11 @@ EXCEL_FILE = "skills_trial.xlsx"
 EMAIL_ONLY_MODE = os.environ.get("EMAIL_ONLY_MODE", "True").lower() == "true"
 
 # Dettagli per la modalità solo email
-#DESTINATARIO_EMAIL = os.environ.get("DESTINATARIO_EMAIL", "stefania.giordano@alten.it") # da sostituire
+DESTINATARIO_EMAIL = os.environ.get("DESTINATARIO_EMAIL", "stefania.giordano@alten.it") # da sostituire
 #print(f"VERIFICA: DESTINATARIO_EMAIL utilizzato: '{DESTINATARIO_EMAIL}'") 
-#OGGETTO_EMAIL = os.environ.get("OGGETTO_EMAIL", "Modulo Competenze Alten")
-DESTINATARIO_EMAIL = "stefania.giordano@alten.it"
-OGGETTO_EMAIL = "Modulo Competenze Alten"
+OGGETTO_EMAIL = os.environ.get("OGGETTO_EMAIL", "Modulo Competenze Alten")
+#DESTINATARIO_EMAIL = "stefania.giordano@alten.it"
+#OGGETTO_EMAIL = "Modulo Competenze Alten"
 
 # Configurazione SharePoint (todo)
 GENERIC_SHAREPOINT_API_KEY = os.environ.get("GENERIC_SHAREPOINT_API_KEY", "YOUR_API_KEY")
@@ -426,7 +426,7 @@ def index():
         user_filename=user_filename,
         sharepoint_folder_browser_url=SHAREPOINT_FOLDER_BROWSER_URL,
         email_only_mode=EMAIL_ONLY_MODE, 
-        destiatario_email=DESTINATARIO_EMAIL, 
+        destiNatario_email=DESTINATARIO_EMAIL, 
         oggetto_email=OGGETTO_EMAIL) 
 
 
