@@ -2,61 +2,47 @@ from flask import Flask, request, render_template, send_file, abort, redirect, u
 import pandas as pd
 import os
 from datetime import datetime
-# import threading # Non più necessario se non si usa excel_lock per il file principale
-import logging   # Importa il modulo logging
+# import threading # se si usa excel_lock per il file principale
+import logging   
 import requests  # Importa la libreria requests per le chiamate HTTP (necessaria per upload esterni)
-import urllib.parse # Per codificare gli URL (utile per mailto)
+import urllib.parse # Per codificare gli URL 
 
 app = Flask(__name__)
 
 
 
-# Configura il logging: imposta il livello minimo dei messaggi da visualizzare (INFO e superiori)
-# e il formato del messaggio (timestamp, livello, messaggio).
+# Configura il logging: imposta il livello minimo dei messaggi da visualizzare (INFO e superiori) e il formato del messaggio (timestamp, livello, messaggio)
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 EXCEL_FILE = "skills_trial.xlsx"
 
 
-# --- CONFIGURAZIONE MODALITÀ FASE E-MAIL/SHAREPOINT ---
-# Imposta su 'True' per la modalità solo email (fase iniziale).
-# Imposta su 'False' per la modalità SharePoint (successiva).
-# Controllo tramite variabile d'ambiente su Render.
+# Configura la modalità di invio delle risposte (E-MAIL/SHAREPOINT)
+# In fase iniziale è impostata unicamente la modalità che consente l'invio tramite email
+# Se si imposta su 'False' --> modalità SharePoint
+# Controllo tramite variabile d'ambiente su Render
 EMAIL_ONLY_MODE = os.environ.get("EMAIL_ONLY_MODE", "True").lower() == "true"
 
 # Dettagli per la modalità solo email
-INITIAL_RECIPIENT_EMAIL = os.environ.get("INITIAL_RECIPIENT_EMAIL", "stefania.giordano@alten.it") # da sostituire
-INITIAL_EMAIL_SUBJECT = os.environ.get("INITIAL_EMAIL_SUBJECT", "Modulo Competenze Alten")
+DESTINATARIO_EMAIL = os.environ.get("DESTINATARIO_EMAIL", "stefania.giordano@alten.it") # da sostituire
+OGGETTO_EMAIL = os.environ.get("OGGETTO_EMAIL", "Modulo Competenze Alten")
 
-# --- CONFIGURAZIONE SHAREPOINT (per fase successiva e upload automatico opzionale) ---
-# Credenziali e URL del tuo "altro SharePoint" (DA SOSTITUIRE CON VARIABILI D'AMBIENTE SU RENDER!)
-# Queste sono solo PLACEHOLDER. Non usarle così in produzione.
-# Devi consultare la documentazione API del tuo specifico sistema SharePoint.
+# Configurazione SharePoint (todo)
 GENERIC_SHAREPOINT_API_KEY = os.environ.get("GENERIC_SHAREPOINT_API_KEY", "YOUR_API_KEY")
 GENERIC_SHAREPOINT_UPLOAD_API_URL = os.environ.get("GENERIC_SHAREPOINT_UPLOAD_API_URL", "https://your.genericsite.com/api/upload") 
-
-# Questo è l'URL della cartella SharePoint che gli utenti dovrebbero vedere nel browser
-# e dove dovrebbero caricare manualmente i loro file.
-# DEVI SOSTITUIRE QUESTO URL CON IL LINK REALE ALLA TUA CARTELLA SHAREPOINT.
+# URL della cartella SharePoint che gli utenti dovrebbero vedere nel browser (todo)
 SHAREPOINT_FOLDER_BROWSER_URL = os.environ.get("SHAREPOINT_FOLDER_BROWSER_URL", "https://your.sharepoint.com/sites/YourSite/SharedDocuments/YourFolder")
 
 
+# Funzione per caricare un file sullo SharePoint (todo)
 def upload_file_to_generic_sharepoint(file_path, file_name):
-    """
-    Carica un file su un sistema di storage generico (il tuo "altro SharePoint").
-    Questa funzione è un placeholder e DEVE ESSERE PERSONALIZZATA in base
-    alla documentazione API del sistema specifico.
-    """
-    logging.info(f"Tentativo di upload di '{file_name}' a SharePoint generico.")
-
+    logging.info(f"Tentativo di upload di '{file_name}' sullo SharePoint")
     headers = {
         "Authorization": f"Bearer {GENERIC_SHAREPOINT_API_KEY}", 
     }
-
     try:
         with open(file_path, 'rb') as f: 
             response = requests.put(GENERIC_SHAREPOINT_UPLOAD_API_URL + f"/{file_name}", headers=headers, data=f)
             response.raise_for_status() 
-
         logging.info(f"File '{file_name}' caricato su SharePoint generico con successo. Risposta: {response.status_code}")
         return True
     except FileNotFoundError:
@@ -66,8 +52,9 @@ def upload_file_to_generic_sharepoint(file_path, file_name):
         logging.error(f"Errore durante l'upload del file a SharePoint generico: {e}. Risposta: {getattr(e.response, 'text', 'Nessuna risposta testuale')}")
         return False
 
-# Crea la directory USER_FILES_DIR se non esiste già dove exist_ok=True evita un errore se la directory esiste già
 
+
+# Crea la directory USER_FILES_DIR se non esiste già dove exist_ok=True evita un errore se la directory esiste già
 USER_FILES_DIR = "skills_user"
 os.makedirs(USER_FILES_DIR, exist_ok=True)
 
@@ -94,7 +81,7 @@ def get_next_id():
     return _current_id
 
 
-
+# Per la versione con file excel generale
 def remove_user_from_main_file(user_id):
     # Rimuovi la riga dal file principale basata sull'ID dell'utente
     if os.path.exists(EXCEL_FILE):
@@ -104,30 +91,35 @@ def remove_user_from_main_file(user_id):
         df.to_excel(EXCEL_FILE, index=False)
 
 
-
-
-# Funzione per aggiungere le informazioni in ordine logico
+# Funzione per aggiungere i dettagli di una specifica area al dizionario dei dati
 def aggiungi_sezione(nome_sezione, scelte, dettagli_dict,data):
-    """Aggiunge la colonna con le scelte e i dettagli di una specifica area al dizionario dei dati"""
-    data[f"Aree progetti {nome_sezione}"] = ", ".join(scelte)
-    
+    data[f"Aree progetti {nome_sezione}"] = ", ".join(scelte)  
     # Aggiunge la colonna con i dettagli subito dopo la relativa sezione
     for area in dettagli_dict:
         data[area] = "\n\n".join(dettagli_dict[area]) if dettagli_dict[area] else ""
        
 
-@app.route("/", methods=["GET", "POST"])
-def index():
 
+# Definisce la rotta principale dell'applicazione ("/")
+# methods=["GET", "POST"] indica che la rotta gestisce sia le richieste GET (per visualizzare la pagina)
+# che le richieste POST (per inviare i dati del form)
+@app.route("/", methods=["GET", "POST"])
+
+# Gestisce l'invio del form e il salvataggio dei dati
+def index():
+     # Inizializza a None ce successivo setaggio con valori veri in caso di invio POST riuscito
     success_message = None
     show_delete_button = False
     user_id = None  # Variabile per salvare l'ID dell'utente
     user_filename = None
     nome_utente = "" # Inizializza per essere sicuro che sia sempre definito
+
+    # Controlla se la richiesta HTTP è di tipo POST (cioè, il form è stato inviato)      
     if request.method == "POST":
 
-        #preleva i dati dal form
+        # Genera il prossimo ID disponibile per il nuovo utente
         user_id = get_next_id()
+        # Preleva i dati dal form dove "" indica che viene fornito un valore di default vuoto se il campo non è presente
         nome = request.form.get("nome", "")
         nome_utente = nome # Salva il nome per usarlo nel filename
         email = request.form.get("email", "")
@@ -150,6 +142,16 @@ def index():
         hobby= request.form.getlist("hobby")  
         hobby_str = ", ".join(hobby) if hobby else "" 
 
+
+        # Elaborazione delle sezioni dinamiche dei "Progetti" 
+        # Ogni blocco segue una logica simile:
+        # 1. Recupera le scelte generali per la categoria di progetto (es. 'sviluppo').
+        # 2. Inizializza un dizionario `dettagli_<categoria>` con liste vuote per ogni sotto-area.
+        # 3. Itera su ogni sotto-area:
+        #    a. Se la sotto-area è stata selezionata nel form:
+        #    b. Recupera tutti i campi specifici per quell'area (es. linguaggi, tool, durata, descrizione).
+        #    c. Crea una lista di stringhe `esperienze`, dove ogni stringa è una combinazione dei dettagli per una singola esperienza.
+        #    d. Assegna questa lista di esperienze al dizionario `dettagli_<categoria>[area]`.
 
 # Progetti SVILUPPO
         progetti_sviluppo_si_no = request.form.get('progetti_sw_hw_auto', 'No')  
@@ -322,9 +324,8 @@ def index():
        
 
 
-# Dati da salvare nel file excel
+# Crea un dizionario 'data' (che viene poi convertito in DataFrame pandas) con tutte le informazioni raccolte dal form che devono essere salvate nel file excel
         data = {
-
             "ID": user_id,
             "Nome": nome,
             "Email": email,
@@ -341,36 +342,25 @@ def index():
             "Sistemi Operativi": sistemi_operativi,
             "Info aggiuntive": altro_str,
             "Hobby": hobby_str,
-           # "Progetti Sviluppo": progetti_sviluppo_si_no,
-           # "Aree progetti Sviluppo": ", ".join(scelte_progetti_sviluppo),
-           # "Aree progetti V&V": ", ".join(scelte_progetti_vv),
-           # "Aree progetti Safety": ", ".join(scelte_progetti_safety),
-           # "Aree progetti System": ", ".join(scelte_progetti_system),
-           # "Aree progetti Segnalamento": ", ".join(scelte_progetti_segnalamento),
-           # "Progetti BIM": progetti_bim_si_no,
-           # "Progetti PM": progetti_pm_si_no,
-
         }
 
 
 
 
-        # Aggiunta delle varie sezioni con i dettagli in ordine
+        # Aggiunta delle varie sezioni di progetto con i dettagli in ordine al dizionario
         aggiungi_sezione("Sviluppo", scelte_progetti_sviluppo, dettagli_sviluppo,data)
         aggiungi_sezione("V&V", scelte_progetti_vv, dettagli_vv,data)
         aggiungi_sezione("Safety", scelte_progetti_safety, dettagli_safety,data)
         aggiungi_sezione("System", scelte_progetti_system, dettagli_system,data)
         aggiungi_sezione("Segnalamento", scelte_progetti_segnalamento, dettagli_seg,data)
-
         aggiungi_sezione("BIM", scelte_progetti_bim, dettagli_bim,data)
         aggiungi_sezione("Project Management", scelte_progetti_pm, dettagli_pm,data)   
 
 
-
-    # Controlla se l'azione del form è "submit_main" (pulsante "Invia")
+    # Controlla se l'azione del form è "submit_main" (pulsante "Salva Risposta")
         if request.form['action'] == 'submit_main':
             try:
-                # La parte che scriveva sul file Excel principale è stata commentata
+                # Salvataggio dei dati nel file Excel principale
                 # with excel_lock:
                 #     logging.info(f"Lock acquisito per la scrittura del file Excel principale.")
                 #     df = pd.read_excel(EXCEL_FILE)
@@ -384,17 +374,16 @@ def index():
                 success_message = "Risposte inviate con successo!"
 
                 # Generazione del nome del file con nome utente e data
-                # Normalizza il nome utente per il filename (rimuovi spazi, caratteri speciali)
-                sanitized_nome = "".join(c for c in nome_utente if c.isalnum() or c == '_').strip().replace(' ', '_')
-                if not sanitized_nome: # Se il nome è vuoto o solo caratteri speciali
-                    sanitized_nome = "Utente" # Nome di fallback
+                nome_unificato = "".join(c for c in nome_utente if c.isalnum() or c == '_').strip().replace(' ', '_') # Rimuovi spazi o caratteri speciali dal nome utente
+                if not nome_unificato: # Se il nome è vuoto o solo caratteri speciali
+                    nome_unificato = "Utente" # Nome di fallback
                 
-                user_filename = f"{sanitized_nome}_{datetime.now().strftime('%Y%m%d%H%M%S')}.xlsx"
+                user_filename = f"{nome_unificato}_{datetime.now().strftime('%Y%m%d%H%M%S')}.xlsx"
                 logging.info(f"Nome del file utente generato: {user_filename}")
                 user_filepath = os.path.join(USER_FILES_DIR, user_filename)
                 logging.info(f"Percorso del file utente: {user_filepath}")
                 user_df_single = pd.DataFrame([data])
-                # Non includiamo l'ID nel file scaricato dall'utente, ma solo nel file principale se lo avessimo usato
+                # ID escluso dal file scaricato dall'utente
                 if 'ID' in user_df_single.columns:
                     user_df_single = user_df_single.drop(columns=["ID"])
                 user_df_single.to_excel(user_filepath, index=False)
@@ -403,7 +392,7 @@ def index():
                 success_message = f'Si è verificato un errore durante l\'invio delle risposte: {e}'
                 logging.error(f"Errore durante l'invio delle risposte o il salvataggio del file: {e}", exc_info=True)
 
-        # Gestisce l'azione di esportazione al "SharePoint" generico (OPZIONALE)
+        # Gestisce l'azione di esportazione al "SharePoint" (todo)
         elif request.form['action'] == 'export_to_generic_sharepoint':
             filename_to_export = request.form.get("user_filename_to_export")
 
@@ -426,32 +415,45 @@ def index():
             
             user_filename = filename_to_export     
 
+
+    # Renderizza il template 'form.html', passando i messaggi di successo/errore,lo stato del pulsante di eliminazione e il nome del file utente per il download e le info sulle modalità di invio del file excel
     return render_template("form.html", 
         success_message=success_message, 
         show_delete_button=show_delete_button, 
         user_filename=user_filename,
         sharepoint_folder_browser_url=SHAREPOINT_FOLDER_BROWSER_URL,
         email_only_mode=EMAIL_ONLY_MODE, 
-        initial_recipient_email=INITIAL_RECIPIENT_EMAIL, 
-        initial_email_subject=INITIAL_EMAIL_SUBJECT) 
+        initial_recipient_email=DESTINATARIO_EMAIL, 
+        initial_email_subject=OGGETTO_EMAIL) 
 
+
+# Definisce la rotta per il download dei file personale
 @app.route("/download")
 def download():
+    # Preleva il tipo di file da scaricare dal parametro 'file' nell'URL che di default è "main" (file principale)
     file_type = request.args.get("file", "main")  # Valore di default: 'main'
-
+    # Se il tipo di file richiesto è "personal" 
     if file_type == "personal":
         filename = request.args.get("filename")  # Il nome del file personale
+        # Se il nome del file non è stato fornito, genera un errore 400 (Bad Request)
         if not filename:
             return abort(400, description="Missing filename parameter")
         
+        # Costruisce il percorso completo del file utente
         user_filepath = os.path.join(USER_FILES_DIR, filename)
+        # Se il file utente non esiste, genera un errore 404 (Not Found)
         if not os.path.exists(user_filepath):
             return abort(404, description="File not found")
 
+        # Invia il file utente come allegato per il download: as_attachment=True forza il browser a scaricare il file anziché visualizzarlo
         return send_file(user_filepath, as_attachment=True, download_name=filename)
 
     return abort(404, description="Invalid file type or file not found.") # Gestisce il caso di download di tipo "main" non più supportato
     
+
+
+if __name__ == "__main__":
+    app.run(debug=True)
 
 
 if __name__ == "__main__":
