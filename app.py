@@ -24,6 +24,7 @@ EMAIL_ONLY_MODE = os.environ.get("EMAIL_ONLY_MODE", "True").lower() == "true"
 
 # Dettagli per la modalità solo email
 DESTINATARIO_EMAIL = os.environ.get("DESTINATARIO_EMAIL", "stefania.giordano@alten.it") # da sostituire
+print(f"VERIFICA: DESTINATARIO_EMAIL utilizzato: '{DESTINATARIO_EMAIL}'") 
 OGGETTO_EMAIL = os.environ.get("OGGETTO_EMAIL", "Modulo Competenze Alten")
 
 # Configurazione SharePoint (todo)
