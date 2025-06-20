@@ -423,8 +423,8 @@ def index():
         user_filename=user_filename,
         sharepoint_folder_browser_url=SHAREPOINT_FOLDER_BROWSER_URL,
         email_only_mode=EMAIL_ONLY_MODE, 
-        initial_recipient_email=DESTINATARIO_EMAIL, 
-        initial_email_subject=OGGETTO_EMAIL) 
+        destiatario_email=DESTINATARIO_EMAIL, 
+        oggetto_email=OGGETTO_EMAIL) 
 
 
 # Definisce la rotta per il download dei file personale
