@@ -12,26 +12,26 @@
     <style>
 /* Stili per il contenitore principale del form */
         .container {
-            background-color: #ffffff; /* Sfondo bianco per il form */
-            padding: 30px 40px; /* Padding più generoso */
-            border-radius: 12px; /* Angoli più arrotondati */
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1); /* Ombra più pronunciata */
-            max-width: 900px; /* Larghezza massima aumentata */
+            background-color: #ffffff;              /* Sfondo bianco per il form */
+            padding: 30px 40px;                     
+            border-radius: 12px;                    
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);         
+            max-width: 900px; 
             width: 100%;
-            margin-top: 30px; /* Margine superiore */
-            text-align: left; /* Allinea il testo a sinistra per il form */
+            margin-top: 30px; 
+            text-align: left;                       /* Allinea il testo a sinistra per il form */
         }
 
         /* Stili per i titoli principali e secondari */
         h1, h2, h3, h4 {
-            color: #2c3e50; /* Blu scuro */
+            color: #2c3e50;                     /* Blu scuro */
             margin-top: 25px;
             margin-bottom: 15px;
             font-weight: 600;
         }
 
-        h1 { font-size: 2.2em; text-align: center; color: #0056b3;} /* Titolo centrale */
-        h2 { font-size: 1.8em; border-bottom: 2px solid #0056b3; padding-bottom: 10px; margin-bottom: 20px;} /* Sottolineato */
+        h1 { font-size: 2.2em; text-align: center; color: #0056b3;}                                             /* Titolo centrale */
+        h2 { font-size: 1.8em; border-bottom: 2px solid #0056b3; padding-bottom: 10px; margin-bottom: 20px;}    /* Sottolineato */
         h3 { font-size: 1.5em; color: #007bff; margin-top: 20px;}
         h4 { font-size: 1.2em; color: #555;}
 
@@ -49,19 +49,19 @@
         input[type="number"],
         select,
         textarea {
-            width: calc(100% - 22px); /* Adatta la larghezza includendo padding e bordo */
+            width: calc(100% - 22px);               /* Adatta la larghezza includendo padding e bordo */
             padding: 10px;
             margin-bottom: 15px;
             border: 1px solid #ddd;
-            border-radius: 8px; /* Angoli arrotondati per tutti i campi input */
+            border-radius: 8px; 
             font-size: 1em;
-            box-sizing: border-box; /* Importante per width: 100% */
+            box-sizing: border-box; 
             background-color: #fefefe;
         }
 
         textarea {
-            resize: vertical; /* Consente il ridimensionamento solo verticale */
-            min-height: 80px; /* Altezza minima per le textarea */
+            resize: vertical;           /* Consente il ridimensionamento solo verticale */
+            min-height: 80px;           /* Altezza minima per le textarea */
         }
 
         /* Stili per i radio button e checkbox */
@@ -86,7 +86,7 @@
 
         /* Stili per i pulsanti */
         button {
-            background-color: #28a745; /* Verde brillante per submit */
+            background-color: #28a745;              /* Verde brillante submit */
             color: white;
             padding: 12px 25px;
             border: none;
@@ -111,7 +111,7 @@
         }
 
         button[name="action"][value="delete_from_main"] {
-            background-color: #dc3545; /* Rosso per eliminare */
+            background-color: #dc3545; 
         }
         button[name="action"][value="delete_from_main"]:hover {
             background-color: #c82333;
@@ -129,34 +129,34 @@
             font-weight: 500;
         }
 
-        /* Stili per blocchi di esperienza dinamici */
+        /* Stili per blocchi di esperienza >1 dinamici */
         .experience-block {
-            background-color: #e9f7ef; /* Sfondo leggermente verde chiaro */
+            background-color: #e9f7ef;              /* Sfondo verde chiaro */
             padding: 20px;
             border-radius: 10px;
             margin-top: 20px;
             border: 1px solid #cce5d4;
-            position: relative; /* Per posizionamento assoluto del pulsante Rimuovi */
+            position: relative;                 
         }
 
         .experience-block button {
-            background-color: #dc3545; /* Rosso per il pulsante Rimuovi */
-            position: absolute; /* Posiziona il pulsante in modo assoluto */
-            top: 15px; /* Dalla cima */
-            right: 15px; /* Dalla destra */
-            padding: 8px 15px; /* Padding ridotto */
-            font-size: 0.9em; /* Dimensione font ridotta */
-            margin: 0; /* Rimuovi margini aggiuntivi */
-            box-shadow: none; /* Rimuovi ombra */
+            background-color: #dc3545; /* Rosso per il pulsante Rimuovi  posizionato in modo assoluto in slto a destra*/
+            position: absolute; 
+            top: 15px;          
+            right: 15px;            
+            padding: 8px 15px;      
+            font-size: 0.9em; 
+            margin: 0;          
+            box-shadow: none;
         }
         .experience-block button:hover {
             background-color: #c82333;
         }
 
         .add-experience-button {
-            background-color: #007bff; /* Blu per aggiungere esperienza */
+            background-color: #007bff; 
             margin-top: 15px;
-            display: inline-block; /* Rendi il pulsante a riga singola */
+            display: inline-block; 
         }
         .add-experience-button:hover {
             background-color: #0056b3;
@@ -170,12 +170,12 @@
         /* Stili per il pulsante di download e il pulsante per email */
         .download-export-section {
             margin-top: 30px;
-            padding: 25px; /* Più padding */
-            border: 2px solid #007bff; /* Bordo più evidente */
+            padding: 25px; 
+            border: 2px solid #007bff; 
             border-radius: 12px;
             text-align: center;
-            background-color: #e6f7ff; /* Sfondo azzurro chiaro */
-            box-shadow: 0 4px 10px rgba(0, 123, 255, 0.2); /* Ombra azzurra */
+            background-color: #e6f7ff; 
+            box-shadow: 0 4px 10px rgba(0, 123, 255, 0.2); 
         }
         .download-export-section h3 {
             color: #0056b3;
@@ -189,9 +189,9 @@
         }
         .download-export-section ol {
             text-align: left;
-            max-width: 450px; /* Aumentato per migliore leggibilità */
+            max-width: 450px; 
             margin: 0 auto 25px auto;
-            padding-left: 20px; /* Padding per le liste numerate */
+            padding-left: 20px; 
             font-size: 1em;
             color: #444;
         }
@@ -202,17 +202,17 @@
         .download-export-section .button-group {
             display: flex;
             justify-content: center;
-            gap: 15px; /* Spazio tra i pulsanti */
-            flex-wrap: wrap; /* Permette ai pulsanti di andare a capo su schermi piccoli */
+            gap: 15px;                      /* Spazio tra i pulsanti */
+            flex-wrap: wrap;                /* Permette ai pulsanti di andare a capo su schermi piccoli */
         }
         .download-export-section a, .download-export-section button {
-            padding: 14px 30px; /* Padding aumentato per i pulsanti */
-            font-size: 1.05em; /* Dimensione font leggermente più grande */
-            margin: 0; /* Reset margini per il gap */
+            padding: 14px 30px; 
+            font-size: 1.05em; 
+            margin: 0; 
         }
 
-        .download-export-section .download-button { /* Classe specifica per il download */
-            background-color: #6c757d; /* Grigio per il link di download */
+        .download-export-section .download-button { 
+            background-color: #6c757d; 
             color: white;
             border-radius: 8px;
             text-decoration: none;
@@ -553,26 +553,28 @@
 
 
 
-        // Funzione per espandere automaticamente l'altezza di una textarea mentre l'utente digita new 
+        // Funzione per espandere automaticamente l'altezza di una textarea mentre l'utente digita 
         function autoExpand(field) {
             field.style.height = 'inherit'; // Reimposta l'altezza per calcolare quella effettiva
             field.style.height = (field.scrollHeight) + 'px'; // Imposta l'altezza sullo scrollHeight
         }
 
-        // Funzione per espandere automaticamente la larghezza di una textarea new
+        // Funzione per espandere automaticamente la larghezza di una textarea 
         function autoExpandWidth(field) {
             field.style.width = 'inherit'; // Reimposta la larghezza per calcolare quella effettiva
             // Imposta la larghezza basata sul contenuto, con un minimo per evitare di scomparire
             field.style.width = Math.max(field.scrollWidth, 100) + 'px';
         }
 
-        // Funzione per aprire il client email con destinatario e oggetto predefiniti (Fase Iniziale) new
-        function sendInitialEmail(recipient, subject, userFileName) {
+        // Funzione per aprire il client email (outlook in questo caso) con destinatario e oggetto predefiniti 
+        function sendInitialEmail(destinatario, oggetto, userFileName) {
             // Corpo dell'email che chiede all'utente di allegare il file scaricato
-            const body = `Gentile responsabile, \n\nIn allegato trovi il mio file con le risposte del Modulo Competenze Alten (${userFileName}). \n\nGrazie per la collaborazione.\n\nCordiali saluti,\n`;
+            const body = `Ciao, \n\nIn allegato trovi il mio file con le risposte del Modulo Competenze Alten (${userFileName}). \n\nGrazie per la collaborazione.\n\nCordiali saluti,\n`;
             
-            // Costruisci il link mailto completo
-            const mailtoLink = `mailto:${recipient}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+            // Costruisci il link mailto completo: indica al browser di aprire il client di posta elettronica predefinito dell'utente
+            //  La funzione encodeURIComponent() codifica caratteri speciali (come spazi, simboli, caratteri accentati) in un formato URL-compatibile
+            // Il simbolo & separa i parametri e indica che il prossimo è il corpo del messaggio.
+            const mailtoLink = `mailto:${destinatario}?subject=${encodeURIComponent(oggetto)}&body=${encodeURIComponent(body)}`;
             
             // Apri il link mailto
             window.location.href = mailtoLink;
@@ -581,8 +583,8 @@
 
         // Funzione per aprire il client email con link SharePoint pre-compilato (Fase SharePoint) new
         function sendSharePointNotificationEmail(sharepointLink, userFileName) {
-            const recipient = "responsabile.dati@alten.it"; // Indirizzo email del responsabile per notifica SharePoint
-            const subject = "Consegna Risposte Modulo Competenze Aziendali - " + userFileName; // Oggetto più specifico
+            const destinatario = "responsabile.dati@alten.it"; // Indirizzo email del responsabile per notifica SharePoint
+            const oggetto = "Consegna Risposte Modulo Competenze Aziendali - " + userFileName; // Oggetto più specifico
             
             const body = `Gentile responsabile, \n\nHo compilato il modulo competenze aziendali. \n\nHo scaricato il mio file di risposte "${userFileName}" e l'ho caricato (o lo caricherò) direttamente nella cartella SharePoint designata. \n\nLa cartella SharePoint per il caricamento è accessibile al seguente link: \n\n${sharepointLink}\n\nGrazie per la collaborazione.\n\nCordiali saluti,\n`;
             
@@ -590,7 +592,7 @@
             const encodedBody = encodeURIComponent(body);
 
             // Costruisci il link mailto completo
-            const mailtoLink = `mailto:${recipient}?subject=${encodeURIComponent(subject)}&body=${encodedBody}`;
+            const mailtoLink = `mailto:${destinatario}?subject=${encodeURIComponent(oggetto)}&body=${encodedBody}`;
             
             // Apri il link mailto
             window.location.href = mailtoLink;
@@ -2004,33 +2006,39 @@
 
 
         <!-- Pulsante per inviare le risposte -->
-        <!-- Questo pulsante è di tipo 'submit' e ha un attributo 'name="action"' con valore 'submit_main' -->
         <!-- Questo attributo 'action' è letto dal back-end (app.py) per identificare l'azione richiesta -->
         <button type="submit" name="action" value="submit_main">Salva risposta</button>
 
     </form>
 
 
+
     <!-- Sezione per il download del file personale e le azioni post-invio -->
+
+    <!-- Quando l'utente compila e invia il modulo, il backend elabora le informazioni presenti nel modulo e se tutto va abuon fine
+      il backend crea un nome di file univoco per l'utente e lo passa come variabile (user_filename) al template -->
+
         {% if user_filename %}
             <div class="download-export-section">
                 <h3>Grazie per aver compilato il modulo!</h3>
                 <p>Il tuo file con le risposte è pronto:</p>
-                <ol>
+                <ol>        <!-- Viene utilizzato per creare una lista i cui elementi sono li -->
                     <li><strong>1. Scarica il tuo file Excel personale:</strong></li>
                     <div class="button-group">
+                        <!-- Indica al browser di scaricare il file referenziato dall'href (che punta alla rotta download) anziché tentare di aprirlo direttamente -->
                         <a href="{{ url_for('download', file='personal', filename=user_filename) }}" download class="download-button">Scarica il tuo file Excel</a>
                     </div>
                     
+                    <!-- Modalità #1: invio dei singoli file al destinatario specifico -->
                     {% if email_only_mode %}
-                        <!-- Modalità Iniziale: Solo Email al Destinatario Specifico -->
                         <li><strong>2. Invia il file scaricato via email al responsabile designato:</strong></li>
                         <p style="font-size: 0.95em; color: #555; margin-top: 5px; margin-bottom: 15px;">
                             Per favore, clicca il pulsante qui sotto, allega il file Excel scaricato e clicca "Invia" nella finestra della tua email.
                         </p>
                         <div class="button-group">
+                            <!--Quando il pulsante viene cliccato, viene chiamata la funzione JavaScript sendInitialEmail(), passandole tre variabili Jinja2: l'email del destinatario, l'oggetto dell'email e il nome del file dell'utente -->
                             <button type="button" class="email-button-main-action" 
-                                    onclick="sendInitialEmail('{{ initial_recipient_email }}', '{{ initial_email_subject }}', '{{ user_filename }}')">
+                                    onclick="sendInitialEmail('{{ destinatario_email }}', '{{ oggetto_email }}', '{{ user_filename }}')">
                                 Invia File via Email
                             </button>
                         </div>
@@ -2038,7 +2046,7 @@
                             ATTENZIONE: L'invio dell'email è fondamentale per completare la sottomissione.
                         </p>
                     {% else %}
-                        <!-- Modalità SharePoint: Caricamento diretto su SharePoint e notifica opzionale via email -->
+                        <!-- Modalità#2 SharePoint: Caricamento diretto su SharePoint e notifica opzionale via email -->
                         <li><strong>2. Carica il file scaricato direttamente nella cartella SharePoint designata:</strong></li>
                         <p style="font-size: 0.95em; color: #555; margin-top: 5px; margin-bottom: 15px;">
                             Clicca il pulsante qui sotto per aprire la cartella SharePoint. Trascina e rilascia (o carica) il tuo file Excel scaricato.
@@ -2075,34 +2083,7 @@
             </div>
         {% endif %}
 
-<!--
-    <!-- Blocco condizionale Jinja2 (motore di template Python): mostra il messaggio di successo se passato dal back-end>
-    <!--Se la variabile success_message esiste e il suo valore è 'vero' (cioè non è vuota, None, False, o 0), allora esegui il codice che segue>
-    {% if success_message %}
-        <p style="margin-top: 10px; color: green;">{{ success_message }}</p>
-    {% endif %}
 
-    <!-- Blocco condizionale Jinja2: mostra il pulsante per eliminare la risposta -->
-    <!-- Nel codice Python (app.py), show_delete_button è sempre False per disabilitare questa funzionalità>
-    {% if show_delete_button %}
-    <form method="POST">
-        <button type="submit" name="action" value="delete_from_main">Elimina la risposta appena inviata</button>
-    </form>
-    {% endif %}
-
-
-    <h3>Scarica le risposte</h3>
-    <!--<p><a href="/download">Clicca qui per scaricare il file Excel</a></p>>
-    <!-- Link per scaricare il file Excel generale. Il parametro 'file=main' indica al back-end quale file scaricare>
-    <p><a href="/download?file=main">Clicca qui per scaricare il file Excel generale</a></p>
-
-    <!-- Blocco condizionale Jinja2: mostra il link per scaricare il file personale dell'utente se il filename è disponibile>
-    {% if user_filename %}
-    <h3>Scarica le tue risposte</h3>
-        <!-- Link per scaricare il file Excel personale. I parametri 'file=personal' e 'filename' indicano al back-end il file specifico>
-        <p><a href="/download?file=personal&filename={{ user_filename }}">Scarica le tue risposte</a></p>
-    {% endif %}
--->
 
 </body>
 </html>
